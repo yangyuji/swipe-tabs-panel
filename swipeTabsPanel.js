@@ -1,8 +1,8 @@
 /*
 * author: "oujizeng",
 * license: "MIT",
-* name: "naturePullRefresh.js",
-* version: "1.0.1"
+* name: "swipeTabsPanel.js",
+* version: "1.1.2"
 */
 
 (function (root, factory) {
@@ -13,7 +13,7 @@
     } else if (typeof exports === 'object') {
         module.exports = factory();
     } else {
-        root['TouchTabPanel'] = factory();
+        root['SwipeTabsPanel'] = factory();
     }
 }(this, function () {
 
@@ -21,7 +21,7 @@
         return document.querySelector(str);
     };
 
-    var TouchTabPanel = {
+    var SwipeTabsPanel = {
 
         init: function(opt){
 
@@ -122,7 +122,7 @@
 
                 // 上下滑动
                 //if(moveDirection == 'up' || moveDirection == 'down') {
-                    //return;
+                //return;
                 //}
 
                 // 向右滑动
@@ -213,5 +213,5 @@
         }
     };
 
-    return TouchTabPanel;
+    return SwipeTabsPanel;
 }));
