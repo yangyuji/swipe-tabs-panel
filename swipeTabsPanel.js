@@ -41,8 +41,8 @@
             page.addEventListener('touchstart', function (event) {
 
                 dragStart = {
-                    x: event.touches ? event.touches[0].pageX : event.touches[0].clientX,
-                    y: event.touches ? event.touches[0].pageY : event.touches[0].clientY
+                    x: event.touches[0].pageX,
+                    y: event.touches[0].pageY
                 }
 
                 scroller.style.transitionProperty = 'transform';
@@ -56,8 +56,8 @@
                     return;
                 }
 
-                var nowX = event.touches ? event.touches[0].pageX : event.touches[0].clientX;
-                var nowY = event.touches ? event.touches[0].pageY : event.touches[0].clientY;
+                var nowX = event.touches[0].pageX;
+                var nowY = event.touches[0].pageY;
                 moveX = nowX - dragStart.x;
                 moveY = nowY - dragStart.y;
 
