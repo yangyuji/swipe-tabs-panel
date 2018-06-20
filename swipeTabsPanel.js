@@ -1,28 +1,56 @@
 /*
 * author: "oujizeng",
 * license: "MIT",
+* github: "https://github.com/yangyuji/swipe-tabs-panel",
 * name: "swipeTabsPanel.js",
-* version: "1.1.3"
+* version: "1.2.0"
 */
 
 (function (root, factory) {
     if (typeof module != 'undefined' && module.exports) {
         module.exports = factory();
+    } else if (typeof define == 'function' && define.amd) {
+        define( function () { return factory(); } );
     } else {
-        root['SwipeTabsPanel'] = factory();
+        root['swipeTabsPanel'] = factory();
     }
 }(this, function () {
+    'use strict'
 
-    var getEle = function (str) {
+    var _getEle = function (str) {
         return document.querySelector(str);
     };
 
-    var SwipeTabsPanel = {
+    var _transform = function (el, attr, val) {
+        var vendors = ['', 'webkit', 'ms', 'Moz', 'O'],
+            body = document.body || document.documentElement;
+
+        [].forEach.call(vendors, function (vendor) {
+            var styleAttr = vendor ? vendor + attr.charAt(0).toUpperCase() + attr.substr(1) : attr;
+            if (typeof body.style[styleAttr] === 'string') {
+                el.style[styleAttr] = val;
+            }
+        });
+    };
+
+    var _transitionEnd = function (el, fun) {
+        var vendors = ['webitTransitionEnd', 'transitionend'];
+        var handler = function (e) {
+            [].forEach.call(vendors, function (vendor) {
+                el.removeEventListener(vendor, handler, false);
+            });
+            fun.apply(el, arguments);
+        };
+        [].forEach.call(vendors, function (vendor) {
+            el.addEventListener(vendor, handler, false);
+        });
+    };
+
+    var swipeTabsPanel = {
 
         init: function(opt){
 
             var moveCountX = opt.moveCountX || 40,          // 位移系数
-                moveCountY = opt.moveCountY || 60,
                 coefficient = 0.35,                         // 阻尼系数，0.2~0.5比较合适
                 clientWidth = window.screen.width,
                 clientHeight = window.screen.height,
@@ -32,32 +60,31 @@
                 moveY = 0,                                  // 竖向滑动距离
                 moveDirection = '',                         // 滑动方向，在开始的时候就定死，不再改变
                 currentMoveX = 0,                           // 横向动画已经滑动距离
-                currentMoveY = 0,                           // 竖向动画已经滑动距离
                 dragStart = null;                           // 开始抓取标志位
 
-            var scroller = getEle(opt.scroller),            // 滚动容器
-                page = getEle(opt.page);                    // 主容器
+            var scroller = _getEle(opt.scroller),            // 滚动容器
+                page = _getEle(opt.page);                    // 主容器
 
-            page.addEventListener('touchstart', function (event) {
+            page.addEventListener('touchstart', function (e) {
 
                 dragStart = {
-                    x: event.touches[0].pageX,
-                    y: event.touches[0].pageY
-                }
+                    x: e.touches[0].pageX,
+                    y: e.touches[0].pageY
+                };
 
-                scroller.style.transitionProperty = 'transform';
-                scroller.style.transitionTimingFunction = 'cubic-bezier(0, 0, 0.25, 1)';
-                scroller.style.transitionDuration = '0ms';
+                _transform(scroller, 'transitionProperty', 'transform');
+                _transform(scroller, 'transitionTimingFunction', 'cubic-bezier(0, 0, 0.25, 1)');
+                _transform(scroller, 'transitionDuration', '0ms');
             });
 
-            page.addEventListener('touchmove', function (event) {
+            page.addEventListener('touchmove', function (e) {
                 // 防止从其他地方滑到page内的
                 if (dragStart === null) {
                     return;
                 }
 
-                var nowX = event.touches[0].pageX;
-                var nowY = event.touches[0].pageY;
+                var nowX = e.touches[0].pageX;
+                var nowY = e.touches[0].pageY;
                 moveX = nowX - dragStart.x;
                 moveY = nowY - dragStart.y;
 
@@ -68,8 +95,8 @@
                     } else {
                         moveDirection = 'up'
                     }
-                    document.querySelector('body').style.overflow = 'auto';
-                    document.querySelector('html').style.overflow = 'auto';
+                    _getEle('body').style.overflow = 'auto';
+                    _getEle('html').style.overflow = 'auto';
                 }
                 // 左右滑动
                 if (Math.abs(moveX) > Math.abs(moveY)) {
@@ -78,8 +105,8 @@
                     } else {
                         moveDirection = 'left';
                     }
-                    document.querySelector('body').style.overflow = 'hidden';
-                    document.querySelector('html').style.overflow = 'hidden';
+                    _getEle('body').style.overflow = 'hidden';
+                    _getEle('html').style.overflow = 'hidden';
                 }
 
                 if (moveDirection == 'right') {
@@ -89,9 +116,9 @@
                         // var x = moveX > clientWidth ? clientWidth * coefficient : moveX * coefficient;
                         // 改为不限制滚动距离
                         var x = moveX * coefficient;
-                        scroller.style.transform = 'translate3d(' + x + 'px,0,0)';
+                        _transform(scroller, 'transform', 'translate3d(' + x + 'px,0,0)');
                     } else {
-                        scroller.style.transform = 'translate3d(' + (currentMoveX + Math.abs(moveX)) + 'px,0,0)';
+                        _transform(scroller, 'transform', 'translate3d(' + (currentMoveX + Math.abs(moveX)) + 'px,0,0)');
                     }
                 }
 
@@ -102,24 +129,19 @@
                         // var x = Math.abs(moveX) > clientWidth ? currentMoveX - (clientWidth * coefficient) : currentMoveX - (Math.abs(moveX) * coefficient);
                         // 改为不限制滚动距离
                         var x = currentMoveX - (Math.abs(moveX) * coefficient);
-                        scroller.style.transform = 'translate3d(' + x + 'px,0,0)';
+                        _transform(scroller, 'transform', 'translate3d(' + x + 'px,0,0)');
                     } else {
-                        scroller.style.transform = 'translate3d(' + (currentMoveX - Math.abs(moveX)) + 'px,0,0)';
+                        _transform(scroller, 'transform', 'translate3d(' + (currentMoveX - Math.abs(moveX)) + 'px,0,0)');
                     }
                 }
 
             });
 
-            page.addEventListener('touchend', function(event) {
+            page.addEventListener('touchend', function() {
 
                 if (moveX === 0 && moveY === 0) {
                     return;
                 }
-
-                // 上下滑动
-                //if(moveDirection == 'up' || moveDirection == 'down') {
-                //return;
-                //}
 
                 // 向右滑动
                 if (moveDirection == 'right') {
@@ -132,10 +154,10 @@
                             // 向右滑一屏
                             currentPanel -= 1;
                             currentMoveX += clientWidth;
-                            scroller.style.transitionDuration = '350ms';
-                            scroller.style.transform = 'translate3d(' + currentMoveX + 'px,0,0)';
+                            _transform(scroller, 'transitionDuration', '350ms');
+                            _transform(scroller, 'transform', 'translate3d(' + currentMoveX + 'px,0,0)');
                             // 配置panel的高度，避免被高的撑开
-                            setTimeout(function () {
+                            _transitionEnd(scroller, function () {
                                 for (var n = 0; n < scroller.children.length; n++) {
                                     if (n === currentPanel - 1) {
                                         scroller.children[n].style.height = 'auto';
@@ -143,11 +165,11 @@
                                         scroller.children[n].style.height = clientHeight + 'px';
                                     }
                                 }
-                            }, 0);
+                            });
                         } else {
                             // 回到初始位置
-                            scroller.style.transitionDuration = '350ms';
-                            scroller.style.transform = 'translate3d(' + currentMoveX + 'px,0,0)';
+                            _transform(scroller, 'transitionDuration', '350ms');
+                            _transform(scroller, 'transform', 'translate3d(' + currentMoveX + 'px,0,0)');
                         }
                     }
                 }
@@ -156,17 +178,17 @@
                 if (moveDirection == 'left') {
                     // 达到最后一屏
                     if (Math.abs(currentMoveX) == (panelNum - 1) * clientWidth) {
-                        scroller.style.transitionDuration = '350ms';
-                        scroller.style.transform = 'translate3d(' + currentMoveX + 'px,0,0)';
+                        _transform(scroller, 'transitionDuration', '350ms');
+                        _transform(scroller, 'transform', 'translate3d(' + currentMoveX + 'px,0,0)');
                     } else {
                         if (Math.abs(moveX) > moveCountX) {
                             // 向左滑一屏
                             currentPanel += 1;
                             currentMoveX -= clientWidth;
-                            scroller.style.transitionDuration = '350ms';
-                            scroller.style.transform = 'translate3d(' + currentMoveX + 'px,0,0)';
+                            _transform(scroller, 'transitionDuration', '350ms');
+                            _transform(scroller, 'transform', 'translate3d(' + currentMoveX + 'px,0,0)');
                             // 配置panel的高度，避免被高的撑开
-                            setTimeout(function () {
+                            _transitionEnd(scroller, function () {
                                 for (var n = 0; n < scroller.children.length; n++) {
                                     if (n === currentPanel - 1) {
                                         scroller.children[n].style.height = 'auto';
@@ -174,32 +196,30 @@
                                         scroller.children[n].style.height = clientHeight + 'px';
                                     }
                                 }
-                            }, 0);
+                            });
                         } else {
                             // 回到初始位置
-                            scroller.style.transitionDuration = '350ms';
-                            scroller.style.transform = 'translate3d(' + currentMoveX + 'px,0,0)';
+                            _transform(scroller, 'transitionDuration', '350ms');
+                            _transform(scroller, 'transform', 'translate3d(' + currentMoveX + 'px,0,0)');
                         }
                     }
                 }
 
-                console.log('moveDirection', moveDirection);
-                console.log('currentMoveX', currentMoveX);
                 // 恢复初始化状态
-                document.querySelector('body').style.overflow = 'auto';
-                document.querySelector('html').style.overflow = 'auto';
+                _getEle('body').style.overflow = 'auto';
+                _getEle('html').style.overflow = 'auto';
                 moveDirection = '';
                 dragStart = null;
                 moveX = 0;
                 moveY = 0;
             });
 
-            page.addEventListener('touchcancel', function(event) {
-                document.querySelector('body').style.overflow = 'auto';
-                document.querySelector('html').style.overflow = 'auto';
+            page.addEventListener('touchcancel', function() {
+                _getEle('body').style.overflow = 'auto';
+                _getEle('html').style.overflow = 'auto';
                 // 回到初始位置
-                scroller.style.transitionDuration = '350ms';
-                scroller.style.transform = 'translate3d(' + currentMoveX + 'px,0,0)';
+                _transform(scroller, 'transitionDuration', '350ms');
+                _transform(scroller, 'transform', 'translate3d(' + currentMoveX + 'px,0,0)');
                 // 恢复初始化状态
                 moveDirection = '';
                 dragStart = null;
@@ -209,5 +229,5 @@
         }
     };
 
-    return SwipeTabsPanel;
+    return swipeTabsPanel;
 }));
