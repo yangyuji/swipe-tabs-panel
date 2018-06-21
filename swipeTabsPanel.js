@@ -54,8 +54,6 @@
                 coefficient = 0.35,                         // 阻尼系数，0.2~0.5比较合适
                 clientWidth = window.screen.width,
                 clientHeight = window.screen.height,
-                htmlOverflow = document.querySelector('html').style.overflow,
-                bodyOverflow = document.body.style.overflow,
                 panelNum = 3,                               // 默认屏个数
                 currentPanel = 1,                           // 当前所在屏
                 moveX = 0,                                  // 横向滑动距离
@@ -95,46 +93,36 @@
                     } else {
                         moveDirection = 'up'
                     }
-                    _getEle('body').style.overflow = bodyOverflow;
-                    _getEle('html').style.overflow = htmlOverflow;
                 }
                 // 左右滑动
                 if (Math.abs(moveX) > Math.abs(moveY)) {
+
                     if (moveX > 0) {
                         moveDirection = 'right';
+                        // 已经到最左边了
+                        if (currentMoveX == 0) {
+                            // 加上阻尼效果
+                            // var x = moveX > clientWidth ? clientWidth * coefficient : moveX * coefficient;
+                            // 改为不限制滚动距离
+                            var x = moveX * coefficient;
+                            _transform(scroller, 'transform', 'translate3d(' + x + 'px,0,0)');
+                        } else {
+                            _transform(scroller, 'transform', 'translate3d(' + (currentMoveX + Math.abs(moveX)) + 'px,0,0)');
+                        }
                     } else {
                         moveDirection = 'left';
-                    }
-                    _getEle('body').style.overflow = 'hidden';
-                    _getEle('html').style.overflow = 'hidden';
-                }
-
-                if (moveDirection == 'right') {
-                    // 已经到最左边了
-                    if (currentMoveX == 0) {
-                        // 加上阻尼效果
-                        // var x = moveX > clientWidth ? clientWidth * coefficient : moveX * coefficient;
-                        // 改为不限制滚动距离
-                        var x = moveX * coefficient;
-                        _transform(scroller, 'transform', 'translate3d(' + x + 'px,0,0)');
-                    } else {
-                        _transform(scroller, 'transform', 'translate3d(' + (currentMoveX + Math.abs(moveX)) + 'px,0,0)');
+                        // 已经到最右边了
+                        if (Math.abs(currentMoveX) >= (panelNum - 1) * clientWidth) {
+                            // 加上阻尼效果
+                            // var x = Math.abs(moveX) > clientWidth ? currentMoveX - (clientWidth * coefficient) : currentMoveX - (Math.abs(moveX) * coefficient);
+                            // 改为不限制滚动距离
+                            var x = currentMoveX - (Math.abs(moveX) * coefficient);
+                            _transform(scroller, 'transform', 'translate3d(' + x + 'px,0,0)');
+                        } else {
+                            _transform(scroller, 'transform', 'translate3d(' + (currentMoveX - Math.abs(moveX)) + 'px,0,0)');
+                        }
                     }
                 }
-
-                if (moveDirection == 'left') {
-                    // 已经到最右边了
-                    if (Math.abs(currentMoveX) >= (panelNum - 1) * clientWidth) {
-                        // 加上阻尼效果
-                        // var x = Math.abs(moveX) > clientWidth ? currentMoveX - (clientWidth * coefficient) : currentMoveX - (Math.abs(moveX) * coefficient);
-                        // 改为不限制滚动距离
-                        var x = currentMoveX - (Math.abs(moveX) * coefficient);
-                        _transform(scroller, 'transform', 'translate3d(' + x + 'px,0,0)');
-                    } else {
-                        _transform(scroller, 'transform', 'translate3d(' + (currentMoveX - Math.abs(moveX)) + 'px,0,0)');
-                    }
-                }
-
             });
 
             page.addEventListener('touchend', function() {
@@ -209,9 +197,9 @@
                     }
                 }
 
+                // 规划代码，判断当前的transform位置是否在currentMoveX的整数倍位置，不在需要纠正
+
                 // 恢复初始化状态
-                _getEle('body').style.overflow = bodyOverflow;
-                _getEle('html').style.overflow = htmlOverflow;
                 moveDirection = '';
                 dragStart = null;
                 moveX = 0;
@@ -219,8 +207,6 @@
             });
 
             page.addEventListener('touchcancel', function() {
-                _getEle('body').style.overflow = bodyOverflow;
-                _getEle('html').style.overflow = htmlOverflow;
                 // 回到初始位置
                 _transform(scroller, 'transitionDuration', '200ms');
                 _transform(scroller, 'transform', 'translate3d(' + currentMoveX + 'px,0,0)');
