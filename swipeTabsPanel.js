@@ -137,7 +137,7 @@
                 if (moveDirection == 'right') {
                     // 达到第一屏
                     if (currentMoveX === 0) {
-                        scroller.style.transform = 'translate3d(' + currentMoveX + 'px,0,0)';
+                        _transform(scroller, 'transform', 'translate3d(' + currentMoveX + 'px,0,0)');
                     } else {
                         if (Math.abs(moveX) > moveCountX) {
                             // 向右滑一屏
