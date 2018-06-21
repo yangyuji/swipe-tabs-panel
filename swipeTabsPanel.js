@@ -3,7 +3,7 @@
 * license: "MIT",
 * github: "https://github.com/yangyuji/swipe-tabs-panel",
 * name: "swipeTabsPanel.js",
-* version: "1.2.0"
+* version: "1.2.1"
 */
 
 (function (root, factory) {
@@ -54,6 +54,8 @@
                 coefficient = 0.35,                         // 阻尼系数，0.2~0.5比较合适
                 clientWidth = window.screen.width,
                 clientHeight = window.screen.height,
+                htmlOverflow = document.querySelector('html').style.overflow,
+                bodyOverflow = document.body.style.overflow,
                 panelNum = 3,                               // 默认屏个数
                 currentPanel = 1,                           // 当前所在屏
                 moveX = 0,                                  // 横向滑动距离
@@ -66,14 +68,12 @@
                 page = _getEle(opt.page);                    // 主容器
 
             page.addEventListener('touchstart', function (e) {
-
+                // 记录开始滑动位置
                 dragStart = {
                     x: e.touches[0].pageX,
                     y: e.touches[0].pageY
                 };
-
-                _transform(scroller, 'transitionProperty', 'transform');
-                _transform(scroller, 'transitionTimingFunction', 'cubic-bezier(0, 0, 0.25, 1)');
+                // 还原transitionDuration
                 _transform(scroller, 'transitionDuration', '0ms');
             });
 
@@ -95,8 +95,8 @@
                     } else {
                         moveDirection = 'up'
                     }
-                    _getEle('body').style.overflow = 'auto';
-                    _getEle('html').style.overflow = 'auto';
+                    _getEle('body').style.overflow = bodyOverflow;
+                    _getEle('html').style.overflow = htmlOverflow;
                 }
                 // 左右滑动
                 if (Math.abs(moveX) > Math.abs(moveY)) {
@@ -143,24 +143,28 @@
                     return;
                 }
 
+                _transform(scroller, 'transition', 'transform 350ms cubic-bezier(0, 0, 0.25, 1)');
+
                 // 向右滑动
                 if (moveDirection == 'right') {
                     // 达到第一屏
                     if (currentMoveX === 0) {
-                        scroller.style.transitionDuration = '350ms';
                         scroller.style.transform = 'translate3d(' + currentMoveX + 'px,0,0)';
                     } else {
                         if (Math.abs(moveX) > moveCountX) {
                             // 向右滑一屏
                             currentPanel -= 1;
                             currentMoveX += clientWidth;
-                            _transform(scroller, 'transitionDuration', '350ms');
                             _transform(scroller, 'transform', 'translate3d(' + currentMoveX + 'px,0,0)');
                             // 配置panel的高度，避免被高的撑开
                             _transitionEnd(scroller, function () {
                                 for (var n = 0; n < scroller.children.length; n++) {
                                     if (n === currentPanel - 1) {
                                         scroller.children[n].style.height = 'auto';
+                                        // window滚动
+                                        window.scrollTo(0, 0);
+                                        // 局部容器滚动
+                                        // scroller.scrollTop = 0;
                                     } else {
                                         scroller.children[n].style.height = clientHeight + 'px';
                                     }
@@ -168,7 +172,6 @@
                             });
                         } else {
                             // 回到初始位置
-                            _transform(scroller, 'transitionDuration', '350ms');
                             _transform(scroller, 'transform', 'translate3d(' + currentMoveX + 'px,0,0)');
                         }
                     }
@@ -178,20 +181,22 @@
                 if (moveDirection == 'left') {
                     // 达到最后一屏
                     if (Math.abs(currentMoveX) == (panelNum - 1) * clientWidth) {
-                        _transform(scroller, 'transitionDuration', '350ms');
                         _transform(scroller, 'transform', 'translate3d(' + currentMoveX + 'px,0,0)');
                     } else {
                         if (Math.abs(moveX) > moveCountX) {
                             // 向左滑一屏
                             currentPanel += 1;
                             currentMoveX -= clientWidth;
-                            _transform(scroller, 'transitionDuration', '350ms');
                             _transform(scroller, 'transform', 'translate3d(' + currentMoveX + 'px,0,0)');
                             // 配置panel的高度，避免被高的撑开
                             _transitionEnd(scroller, function () {
                                 for (var n = 0; n < scroller.children.length; n++) {
                                     if (n === currentPanel - 1) {
                                         scroller.children[n].style.height = 'auto';
+                                        // window滚动
+                                        window.scrollTo(0, 0);
+                                        // 局部容器滚动
+                                        // scroller.scrollTop = 0;
                                     } else {
                                         scroller.children[n].style.height = clientHeight + 'px';
                                     }
@@ -199,15 +204,14 @@
                             });
                         } else {
                             // 回到初始位置
-                            _transform(scroller, 'transitionDuration', '350ms');
                             _transform(scroller, 'transform', 'translate3d(' + currentMoveX + 'px,0,0)');
                         }
                     }
                 }
 
                 // 恢复初始化状态
-                _getEle('body').style.overflow = 'auto';
-                _getEle('html').style.overflow = 'auto';
+                _getEle('body').style.overflow = bodyOverflow;
+                _getEle('html').style.overflow = htmlOverflow;
                 moveDirection = '';
                 dragStart = null;
                 moveX = 0;
@@ -215,10 +219,10 @@
             });
 
             page.addEventListener('touchcancel', function() {
-                _getEle('body').style.overflow = 'auto';
-                _getEle('html').style.overflow = 'auto';
+                _getEle('body').style.overflow = bodyOverflow;
+                _getEle('html').style.overflow = htmlOverflow;
                 // 回到初始位置
-                _transform(scroller, 'transitionDuration', '350ms');
+                _transform(scroller, 'transitionDuration', '200ms');
                 _transform(scroller, 'transform', 'translate3d(' + currentMoveX + 'px,0,0)');
                 // 恢复初始化状态
                 moveDirection = '';
