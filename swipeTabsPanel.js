@@ -1,4 +1,4 @@
-/*
+/**
 * author: "oujizeng",
 * license: "MIT",
 * github: "https://github.com/yangyuji/swipe-tabs-panel",
@@ -23,7 +23,7 @@
 
     var _transform = function (el, attr, val) {
         var vendors = ['', 'webkit', 'ms', 'Moz', 'O'],
-            body = document.body || document.documentElement;
+            body = document.documentElement;
 
         [].forEach.call(vendors, function (vendor) {
             var styleAttr = vendor ? vendor + attr.charAt(0).toUpperCase() + attr.substr(1) : attr;
@@ -34,7 +34,7 @@
     };
 
     var _transitionEnd = function (el, fun) {
-        var vendors = ['webitTransitionEnd', 'transitionend'];
+        var vendors = ['webkitTransitionEnd', 'transitionend', 'msTransitionEnd', 'oTransitionEnd'];
         var handler = function (e) {
             [].forEach.call(vendors, function (vendor) {
                 el.removeEventListener(vendor, handler, false);
